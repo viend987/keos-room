@@ -1,170 +1,122 @@
-import { OfficeEngine, AgentEntity } from './engine/OfficeEngine';
-import { SoundEffects } from './services/SoundEffects';
+import { HolographicStudioEngine } from './engine/HolographicStudioEngine';
 
 const canvas = document.getElementById('office-canvas') as HTMLCanvasElement;
 const logStream = document.getElementById('log-stream') as HTMLElement;
-const sfx = new SoundEffects();
-let audioEnabled = true;
+const fpsMeter = document.getElementById('fps-meter') as HTMLElement;
 
-function appendTelemetryLog(tag: string, agentName: string, message: string): void {
+const engine = new HolographicStudioEngine(canvas);
+engine.start();
+
+function appendTelemetryLog(badge: string, roleName: string, message: string): void {
+  if (!logStream) return;
   const row = document.createElement('div');
   row.className = 'log-entry';
   const now = new Date().toTimeString().slice(0, 8);
   row.innerHTML = `
-    <span class="log-time">[${now}]</span>
-    <span class="log-tag">[${tag}]</span>
-    <strong>${agentName}:</strong>
+    <span class="log-time">${now}</span>
+    <span class="log-tag">${badge}</span>
+    <strong>${roleName}:</strong>
     <span>${message}</span>
   `;
   logStream.prepend(row);
-  while (logStream.children.length > 40) {
+  while (logStream.children.length > 50) {
     logStream.removeChild(logStream.lastChild!);
   }
 }
 
-function updateDossier(agent: AgentEntity | null): void {
-  const panel = document.getElementById('dossier-panel')!;
-  if (!agent) {
-    panel.classList.add('hidden');
-    return;
+// Update FPS meter regularly
+setInterval(() => {
+  if (fpsMeter) {
+    fpsMeter.textContent = `${engine.fps} FPS`;
   }
-  panel.classList.remove('hidden');
-  document.getElementById('dos-name')!.textContent = agent.name;
-  document.getElementById('dos-role')!.textContent = `${agent.role} // [${agent.harness}]`;
-  document.getElementById('dos-state')!.textContent = agent.state;
-  document.getElementById('dos-task')!.textContent = agent.currentTask;
-  document.getElementById('dos-caf-val')!.textContent = `${agent.caffeine}%`;
-  (document.getElementById('dos-caf-bar') as HTMLElement).style.width = `${agent.caffeine}%`;
-  document.getElementById('dos-pan-val')!.textContent = `${agent.panicLevel}%`;
-  (document.getElementById('dos-pan-bar') as HTMLElement).style.width = `${agent.panicLevel}%`;
-  document.getElementById('dos-loc')!.textContent = agent.linesWritten.toLocaleString();
-}
+}, 500);
 
-const engine = new OfficeEngine(canvas, (agent) => {
-  if (audioEnabled) sfx.playClick();
-  updateDossier(agent);
+// Drama & Simulation Control Triggers
+document.getElementById('btn-trigger-debate')?.addEventListener('click', () => {
+  engine.triggerDebateThread();
+  appendTelemetryLog('DEBATE', 'Studio Director', 'Triggered team debate thread (PM vs Dev vs QA).');
+  engine.soundEffects.playButtonClick();
 });
 
-engine.init().then(() => {
-  const defaultAgent = engine.agents.get('agy-lead') || null;
-  engine.selectedAgentId = defaultAgent?.id || null;
-  updateDossier(defaultAgent);
-  appendTelemetryLog('SYS_BOOT', 'KEOS_CORE', 'Visual Overhaul v2.4 initialized. 65+ furniture sprites mounted.');
+document.getElementById('btn-trigger-sprint')?.addEventListener('click', () => {
+  appendTelemetryLog('SPRINT', 'Blaze (PM)', 'Sprint rush started! All divisions coding in flow state.');
+  engine.characters.forEach(char => {
+    char.currentAction = 'WORKING';
+    char.isRaging = false;
+  });
+  engine.soundEffects.playHologramSweep();
 });
 
-document.querySelectorAll('[data-wing]').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    document.querySelectorAll('[data-wing]').forEach((b) => b.classList.remove('active'));
-    const target = e.currentTarget as HTMLElement;
-    target.classList.add('active');
-    const wing = target.getAttribute('data-wing') as any;
-    engine.centerCameraOnWing(wing);
-    if (audioEnabled) sfx.playClick();
+document.getElementById('btn-trigger-coffee')?.addEventListener('click', () => {
+  appendTelemetryLog('BREAK', 'Synthesizer Bar', 'Coffee break called. Crew heading to cafe lounge.');
+  const coffeeGoers = ['zero', 'kael', 'rex', 'aura', 'echo'];
+  coffeeGoers.forEach((id, i) => {
+    setTimeout(() => {
+      const char = engine.characters.get(id);
+      if (char) {
+        char.targetX = engine.width - 150 + (Math.random() * 40 - 20);
+        char.targetY = engine.height - 80 + (Math.random() * 25 - 12);
+        char.currentAction = 'CHILLING';
+        engine.soundEffects.playCoffeeSip();
+      }
+    }, i * 350);
   });
 });
 
-document.querySelectorAll('[data-demo]').forEach((btn) => {
-  btn.addEventListener('click', (e) => {
-    const mode = (e.currentTarget as HTMLElement).getAttribute('data-demo') as any;
-    engine.triggerScenario(mode);
-    appendTelemetryLog(`DEMO_${mode}`, 'SIM_DECK', `Triggered office-wide scenario: ${mode}`);
-    if (audioEnabled) sfx.playClick();
-  });
+document.getElementById('btn-trigger-alert')?.addEventListener('click', () => {
+  appendTelemetryLog('ALERT', 'Blaze (PM)', 'Build failure detected! Critical error in staging pipeline!');
+  engine.handleTelemetryEvent('test_failure', 'staging-pipeline.ts', true);
 });
 
-document.getElementById('btn-zoom-in')?.addEventListener('click', () => {
-  engine.adjustZoom(0.4);
-  if (audioEnabled) sfx.playClick();
-});
-
-document.getElementById('btn-zoom-out')?.addEventListener('click', () => {
-  engine.adjustZoom(-0.4);
-  if (audioEnabled) sfx.playClick();
-});
-
-document.getElementById('btn-audio')?.addEventListener('click', (e) => {
-  audioEnabled = !audioEnabled;
-  (e.currentTarget as HTMLElement).textContent = audioEnabled ? '[SFX: ON]' : '[SFX: OFF]';
-});
-
-document.getElementById('dos-close')?.addEventListener('click', () => {
-  engine.selectedAgentId = null;
-  updateDossier(null);
-  if (audioEnabled) sfx.playClick();
-});
-
-document.getElementById('btn-send-coffee')?.addEventListener('click', () => {
-  if (!engine.selectedAgentId) return;
-  const agent = engine.agents.get(engine.selectedAgentId);
-  if (agent) {
-    agent.caffeine = 100;
-    agent.panicLevel = Math.max(0, agent.panicLevel - 30);
-    engine.setAgentBubble(agent, 'Mantap! Espresso panas mendarat di meja kerja!', 'BOOST');
-    updateDossier(agent);
-    appendTelemetryLog('COFFEE_BOOST', agent.name, 'Caffeine restored to 100%.');
-    if (audioEnabled) SoundEffects.playCoffeeBrew();
+// Sound Mute Toggle
+let audioMuted = false;
+const audioBtn = document.getElementById('btn-audio');
+audioBtn?.addEventListener('click', () => {
+  audioMuted = engine.soundEffects.toggleMute();
+  if (audioBtn) {
+    audioBtn.textContent = audioMuted ? 'Sound Off' : 'Sound On';
+    audioBtn.classList.toggle('muted', audioMuted);
   }
 });
 
-document.getElementById('btn-ping-agent')?.addEventListener('click', () => {
-  if (!engine.selectedAgentId) return;
-  const agent = engine.agents.get(engine.selectedAgentId);
-  if (agent) {
-    agent.linesWritten += 42;
-    engine.setAgentBubble(agent, 'Siap bos! Modul ini langsung gua kebut sekarang.', 'PING_ACK');
-    updateDossier(agent);
-    appendTelemetryLog('TASK_PING', agent.name, 'Agent acknowledged manual ping.');
-    if (audioEnabled) SoundEffects.playElevatorChime();
-  }
-});
-
-// Koneksi otomatis ke Unified Bridge
+// Connect to Local Telemetry Bridge
 function connectTelemetryBridge(): void {
-  const wsBadge = document.getElementById('ws-indicator')!;
+  const wsIndicator = document.getElementById('ws-indicator');
   try {
     const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const host = window.location.host || '127.0.0.1:4040';
     const ws = new WebSocket(`${protocol}//${host}`);
+
     ws.onopen = () => {
-      wsBadge.textContent = `[BRIDGE: LIVE ${host}]`;
-      appendTelemetryLog('WS_OPEN', 'BRIDGE_HUB', `Connected to local telemetry hub on ${host}.`);
+      if (wsIndicator) wsIndicator.textContent = 'Telemetry Connected';
+      appendTelemetryLog('SYSTEM', 'Studio Kernel', 'Cyber Studio connected to live telemetry stream.');
     };
+
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
         if (data.type === 'EVENT' && data.event) {
           const ev = data.event;
-          const updatedAgent = engine.ingestTelemetryEvent({
-            harness: ev.session?.harness,
-            account: ev.session?.accountId,
-            category: ev.category,
-            message: ev.detail
-          });
-          appendTelemetryLog(ev.badge || ev.category, updatedAgent.name, ev.detail || 'Telemetry signal');
-          if (engine.selectedAgentId === updatedAgent.id) {
-            updateDossier(updatedAgent);
-          }
-        } else if (data.type === 'SESSION_JOINED' || data.type === 'SESSION_UPDATED') {
-          appendTelemetryLog('SESSION', data.session.harness, `AI session connected: ${data.session.projectName} (${data.session.modelName})`);
-        } else {
-          const updatedAgent = engine.ingestTelemetryEvent(data);
-          appendTelemetryLog(data.category || 'EVENT', updatedAgent.name, data.message || 'Telemetry signal');
-          if (engine.selectedAgentId === updatedAgent.id) {
-            updateDossier(updatedAgent);
-          }
+          engine.handleTelemetryEvent(ev.category || 'io', ev.target || ev.detail, ev.category === 'ERR_ALERT');
+          appendTelemetryLog(ev.badge || ev.category, ev.role || 'Studio', ev.detail || 'Telemetry event');
+        } else if (data.tool || data.category) {
+          engine.handleTelemetryEvent(data.tool || data.category, data.target || data.message, false);
+          appendTelemetryLog(data.category || 'TASK', 'Studio', data.message || 'Action executed');
         }
       } catch {
-        // Ignore malformed packets
+        // Fallback for non-JSON signals
       }
     };
+
     ws.onclose = () => {
-      wsBadge.textContent = '[BRIDGE: SIM MODE]';
+      if (wsIndicator) wsIndicator.textContent = 'Autonomous Mode';
     };
+
     ws.onerror = () => {
-      wsBadge.textContent = '[BRIDGE: SIM MODE]';
+      if (wsIndicator) wsIndicator.textContent = 'Autonomous Mode';
     };
   } catch {
-    wsBadge.textContent = '[BRIDGE: SIM MODE]';
+    if (wsIndicator) wsIndicator.textContent = 'Autonomous Mode';
   }
 }
 

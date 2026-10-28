@@ -3,24 +3,26 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>KEOS ROOM // TACTICAL AGENT VISUALIZER</title>
+  <title>Keos Room — Cyber Studio</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700;800&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-void: #06090f;
-      --bg-panel: rgba(12, 18, 30, 0.92);
-      --bg-card: #111a2e;
-      --border-dim: #1e293b;
-      --border-bright: #38bdf8;
-      --text-main: #f1f5f9;
+      --bg-void: #070a13;
+      --bg-panel: rgba(12, 18, 34, 0.94);
+      --bg-card: #0f172a;
+      --border-dim: rgba(56, 189, 248, 0.15);
+      --border-bright: #00f0ff;
+      --text-main: #f8fafc;
       --text-muted: #94a3b8;
-      --accent-agy: #38bdf8;
-      --accent-claude: #fb923c;
-      --accent-ok: #10b981;
-      --accent-warn: #f59e0b;
-      --accent-err: #ef4444;
+      --accent-cyan: #00f0ff;
+      --accent-sky: #38bdf8;
+      --accent-emerald: #00ff9d;
+      --accent-fuchsia: #ec4899;
+      --accent-purple: #a855f7;
+      --accent-crimson: #ff3366;
+      --accent-amber: #f59e0b;
     }
 
     * {
@@ -33,7 +35,7 @@
     body {
       background: var(--bg-void);
       color: var(--text-main);
-      font-family: 'JetBrains Mono', monospace;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
       height: 100vh;
       width: 100vw;
       overflow: hidden;
@@ -43,37 +45,43 @@
 
     /* TOP COMMAND BAR */
     .command-bar {
-      height: 48px;
+      height: 52px;
       background: var(--bg-panel);
       border-bottom: 1px solid var(--border-dim);
       display: flex;
       align-items: center;
       justify-content: space-between;
-      padding: 0 16px;
+      padding: 0 18px;
       z-index: 30;
+      backdrop-filter: blur(12px);
     }
 
     .brand-cluster {
       display: flex;
       align-items: center;
-      gap: 12px;
+      gap: 14px;
     }
 
     .brand-title {
-      font-family: 'Silkscreen', monospace;
-      font-size: 15px;
-      letter-spacing: 1px;
+      font-size: 14px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
       color: var(--text-main);
       display: flex;
       align-items: center;
-      gap: 8px;
+      gap: 10px;
+    }
+
+    .brand-title .highlight {
+      color: var(--accent-cyan);
+      text-shadow: 0 0 12px rgba(0, 240, 255, 0.45);
     }
 
     .led-dot {
       width: 8px;
       height: 8px;
-      background: var(--accent-ok);
-      box-shadow: 0 0 8px var(--accent-ok);
+      background: var(--accent-emerald);
+      box-shadow: 0 0 10px var(--accent-emerald);
       display: inline-block;
       border-radius: 50%;
       animation: pulse-led 2s infinite ease-in-out;
@@ -81,156 +89,88 @@
 
     @keyframes pulse-led {
       0%, 100% { opacity: 0.7; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px var(--accent-ok); }
+      50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 16px var(--accent-emerald); }
     }
 
     .status-pills {
       display: flex;
       gap: 8px;
+      align-items: center;
     }
 
     .pill {
+      font-family: 'JetBrains Mono', monospace;
       font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
+      font-weight: 600;
+      padding: 3px 9px;
       border: 1px solid var(--border-dim);
       background: var(--bg-card);
       color: var(--text-muted);
+      border-radius: 4px;
     }
 
-    .pill.agy { border-color: var(--accent-agy); color: var(--accent-agy); }
-    .pill.claude { border-color: var(--accent-claude); color: var(--accent-claude); }
-    .pill.ws-ok { border-color: var(--accent-ok); color: var(--accent-ok); }
+    .pill.cyan { border-color: rgba(0, 240, 255, 0.4); color: var(--accent-cyan); }
+    .pill.emerald { border-color: rgba(0, 255, 157, 0.4); color: var(--accent-emerald); }
 
-    .wing-nav {
+    .interaction-deck {
       display: flex;
-      gap: 4px;
+      gap: 8px;
+      align-items: center;
     }
 
-    .btn-tac {
+    .btn-action {
       background: var(--bg-card);
       color: var(--text-main);
       border: 1px solid var(--border-dim);
-      padding: 5px 10px;
-      font-family: 'JetBrains Mono', monospace;
-      font-size: 11px;
+      padding: 6px 14px;
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      font-size: 11.5px;
       font-weight: 700;
       cursor: pointer;
-      transition: all 0.12s ease;
+      border-radius: 4px;
+      transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+      display: flex;
+      align-items: center;
+      gap: 6px;
     }
 
-    .btn-tac:hover, .btn-tac.active {
+    .btn-action:hover {
       border-color: var(--border-bright);
-      background: rgba(56, 189, 248, 0.14);
+      background: rgba(0, 240, 255, 0.12);
       color: #ffffff;
+      box-shadow: 0 0 14px rgba(0, 240, 255, 0.25);
     }
 
-    /* MAIN WORKSPACE */
+    .btn-action.alert {
+      border-color: rgba(255, 51, 102, 0.4);
+      color: #fecdd3;
+    }
+
+    .btn-action.alert:hover {
+      border-color: var(--accent-crimson);
+      background: rgba(255, 51, 102, 0.2);
+      box-shadow: 0 0 14px rgba(255, 51, 102, 0.35);
+    }
+
+    .btn-action.muted {
+      color: #64748b;
+      border-color: #334155;
+    }
+
+    /* MAIN VIEWPORT */
     .viewport-wrap {
       position: relative;
       flex: 1;
       width: 100%;
       overflow: hidden;
+      background: var(--bg-void);
     }
 
     #office-canvas {
       width: 100%;
       height: 100%;
       display: block;
-      cursor: grab;
-      image-rendering: pixelated;
     }
-
-    #office-canvas:active {
-      cursor: grabbing;
-    }
-
-    /* FLOATING DEMO DOCK */
-    .demo-dock {
-      position: absolute;
-      left: 16px;
-      bottom: 16px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-dim);
-      padding: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 6px;
-      z-index: 20;
-      backdrop-filter: blur(6px);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
-    }
-
-    .dock-header {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 1px;
-      border-bottom: 1px solid var(--border-dim);
-      padding-bottom: 4px;
-    }
-
-    .dock-buttons {
-      display: flex;
-      gap: 6px;
-      flex-wrap: wrap;
-    }
-
-    /* RIGHT AGENT DOSSIER FLYOUT */
-    .dossier-panel {
-      position: absolute;
-      top: 16px;
-      right: 16px;
-      width: 290px;
-      background: var(--bg-panel);
-      border: 1px solid var(--border-bright);
-      padding: 14px;
-      z-index: 25;
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
-      backdrop-filter: blur(8px);
-    }
-
-    .dossier-panel.hidden {
-      display: none;
-    }
-
-    .dossier-top {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      border-bottom: 1px solid var(--border-dim);
-      padding-bottom: 8px;
-    }
-
-    .dossier-name {
-      font-family: 'Silkscreen', monospace;
-      font-size: 13px;
-      color: var(--accent-agy);
-    }
-
-    .metric-row {
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      font-size: 11px;
-    }
-
-    .bar-track {
-      width: 100%;
-      height: 8px;
-      background: #090d16;
-      border: 1px solid var(--border-dim);
-    }
-
-    .bar-fill {
-      height: 100%;
-      background: var(--accent-ok);
-      transition: width 0.2s ease;
-    }
-
-    .bar-fill.warn { background: var(--accent-err); }
 
     /* ACTIVITY LOG DRAWER */
     .telemetry-drawer {
@@ -240,36 +180,48 @@
       display: flex;
       flex-direction: column;
       z-index: 30;
+      backdrop-filter: blur(12px);
     }
 
     .drawer-bar {
-      padding: 5px 16px;
-      background: #090e1a;
+      padding: 6px 18px;
+      background: rgba(7, 10, 19, 0.85);
       border-bottom: 1px solid var(--border-dim);
       display: flex;
       justify-content: space-between;
+      align-items: center;
       font-size: 11px;
       color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
     }
 
     .log-stream {
       flex: 1;
       overflow-y: auto;
-      padding: 8px 16px;
-      font-size: 11px;
+      padding: 8px 18px;
+      font-size: 11.5px;
+      font-family: 'JetBrains Mono', monospace;
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 5px;
     }
 
     .log-entry {
       display: flex;
-      gap: 10px;
+      gap: 12px;
       align-items: center;
+      animation: fadeIn 0.18s ease-in;
     }
 
-    .log-time { color: var(--text-muted); }
-    .log-tag { font-weight: 700; color: var(--accent-agy); }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(-3px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .log-time { color: #64748b; }
+    .log-tag { font-weight: 700; color: var(--accent-cyan); }
+    .log-entry strong { color: #e2e8f0; }
+    .log-entry span:last-child { color: #cbd5e1; }
   </style>
 </head>
 <body>
@@ -277,75 +229,42 @@
     <div class="brand-cluster">
       <div class="brand-title">
         <span class="led-dot"></span>
-        <span>KEOS ROOM // OS v2.4</span>
+        <span>Keos Room — <span class="highlight">Cyber Studio</span></span>
       </div>
       <div class="status-pills">
-        <span class="pill agy">[AGY: AUTO]</span>
-        <span class="pill claude">[CLAUDE: AUTO]</span>
-        <span class="pill" style="border-color: #a855f7; color: #a855f7;">[KIRO/KILO: READY]</span>
-        <span class="pill" style="border-color: #34d399; color: #34d399;">[CODEX: READY]</span>
-        <span id="ws-indicator" class="pill ws-ok">[UNIVERSAL BRIDGE: 4040]</span>
+        <span class="pill emerald">Live Studio</span>
+        <span class="pill cyan">10 Crew Members</span>
+        <span id="fps-meter" class="pill">60 FPS</span>
+        <span id="ws-indicator" class="pill">Connecting Stream</span>
       </div>
     </div>
 
-    <nav class="wing-nav">
-      <button class="btn-tac active" data-wing="ALL">[ALL WINGS]</button>
-      <button class="btn-tac" data-wing="ALPHA">[WING ALPHA]</button>
-      <button class="btn-tac" data-wing="WAR_ROOM">[WAR ROOM]</button>
-      <button class="btn-tac" data-wing="BETA">[WING BETA]</button>
-      <button class="btn-tac" data-wing="PANTRY">[PANTRY & LOUNGE]</button>
-    </nav>
-
-    <div class="wing-nav">
-      <button id="btn-zoom-in" class="btn-tac">[ZOOM +]</button>
-      <button id="btn-zoom-out" class="btn-tac">[ZOOM -]</button>
-      <button id="btn-audio" class="btn-tac">[SFX: ON]</button>
+    <div class="interaction-deck">
+      <button id="btn-trigger-debate" class="btn-action">Debate & Drama</button>
+      <button id="btn-trigger-sprint" class="btn-action">Sprint Rush</button>
+      <button id="btn-trigger-coffee" class="btn-action">Coffee Break</button>
+      <button id="btn-trigger-alert" class="btn-action alert">Red Alert</button>
+      <button id="btn-audio" class="btn-action">Sound On</button>
     </div>
   </header>
 
   <main class="viewport-wrap">
     <canvas id="office-canvas"></canvas>
-
-    <section class="demo-dock">
-      <div class="dock-header">SIMULATION TRIGGER DECK // ZERO-EMOJI MODE</div>
-      <div class="dock-buttons">
-        <button class="btn-tac" data-demo="SPRINT">[DEMO: SPRINT WORK]</button>
-        <button class="btn-tac" data-demo="WAR_ROOM">[DEMO: WAR ROOM SYNC]</button>
-        <button class="btn-tac" data-demo="PANIC">[DEMO: QA BUILD ALERT]</button>
-        <button class="btn-tac" data-demo="COFFEE">[DEMO: ESPRESSO BREAK]</button>
-      </div>
-    </section>
-
-    <aside id="dossier-panel" class="dossier-panel hidden">
-      <div class="dossier-top">
-        <span id="dos-name" class="dossier-name">VEX [ARCHITECT]</span>
-        <button id="dos-close" class="btn-tac">[X]</button>
-      </div>
-      <div style="font-size: 11px; color: var(--text-muted);" id="dos-role">Lead Planner</div>
-      <div style="font-size: 11px;">STATUS: <strong id="dos-state" style="color: var(--accent-ok);">CODING</strong></div>
-      <div style="font-size: 11px;">TASK: <span id="dos-task" style="color: var(--text-main);">Designing schema</span></div>
-      <div class="metric-row">
-        <span>CAFFEINE RESERVE (<span id="dos-caf-val">92%</span>)</span>
-        <div class="bar-track"><div id="dos-caf-bar" class="bar-fill" style="width: 92%;"></div></div>
-      </div>
-      <div class="metric-row">
-        <span>PANIC / STRESS INDEX (<span id="dos-pan-val">5%</span>)</span>
-        <div class="bar-track"><div id="dos-pan-bar" class="bar-fill warn" style="width: 5%;"></div></div>
-      </div>
-      <div style="font-size: 11px;">LOC WRITTEN: <strong id="dos-loc">1,420</strong></div>
-      <div style="display: flex; gap: 6px; margin-top: 4px;">
-        <button id="btn-send-coffee" class="btn-tac" style="flex: 1;">[SEND ESPRESSO]</button>
-        <button id="btn-ping-agent" class="btn-tac" style="flex: 1;">[PING TASK]</button>
-      </div>
-    </aside>
   </main>
 
   <footer class="telemetry-drawer">
     <div class="drawer-bar">
-      <span>REAL-TIME TELEMETRY STREAM // PORT 4040</span>
-      <span>GRID: 32x22 [16PX TILE] // Y-SORT ENABLED</span>
+      <span>Studio Telemetry & Live Team Dialogue</span>
+      <span>Vector Humanoid Engine · 60 FPS</span>
     </div>
-    <div id="log-stream" class="log-stream"></div>
+    <div id="log-stream" class="log-stream">
+      <div class="log-entry">
+        <span class="log-time">Studio</span>
+        <span class="log-tag">READY</span>
+        <strong>Core:</strong>
+        <span>Cyber Studio online. 10 humanoid specialists active at workstations.</span>
+      </div>
+    </div>
   </footer>
 
   <script type="module" src="/src/client/main.ts"></script>

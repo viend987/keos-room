@@ -2,7 +2,7 @@ import { test, expect } from '@playwright/test';
 import fs from 'node:fs';
 import path from 'node:path';
 
-test.describe('Keos Room Visual Review & Zero-Emoji Audit', () => {
+test.describe('Keos Room Holographic Cyber-Studio Review & Zero-Emoji Audit', () => {
   const reportsDir = path.resolve('reports/visual-snapshots');
 
   test.beforeAll(() => {
@@ -11,15 +11,15 @@ test.describe('Keos Room Visual Review & Zero-Emoji Audit', () => {
     }
   });
 
-  test('renders full office floor and verifies zero-emoji compliance', async ({ page }) => {
+  test('renders holographic cyber-studio, triggers debate drama, and audits zero-emoji', async ({ page }) => {
     await page.goto('/');
 
     // 1. Wait for canvas element to be ready
     const canvas = page.locator('#office-canvas');
     await expect(canvas).toBeVisible({ timeout: 10000 });
 
-    // Wait 1.5 seconds for OfficeEngine to load layout, assets and complete first frames
-    await page.waitForTimeout(1500);
+    // Wait 2 seconds for initial render loop
+    await page.waitForTimeout(2000);
 
     // 2. Zero-Emoji Audit on full DOM
     const bodyText = await page.innerText('body');
@@ -27,24 +27,24 @@ test.describe('Keos Room Visual Review & Zero-Emoji Audit', () => {
     expect(emojiRegex.test(bodyText)).toBeFalsy();
 
     // 3. Capture baseline screenshot
-    const baselinePath = path.join(reportsDir, 'keos-office-baseline.png');
+    const baselinePath = path.join(reportsDir, 'keos-holographic-studio-baseline.png');
     await page.screenshot({ path: baselinePath, fullPage: false });
     expect(fs.existsSync(baselinePath)).toBeTruthy();
 
-    // 4. Trigger Sprint / Concurrent Work Scenario
-    const btnSprint = page.locator('button[data-demo="SPRINT"]');
-    await expect(btnSprint).toBeVisible();
-    await btnSprint.click();
+    // 4. Trigger Inter-Jobdesk Debate & Drama Scenario
+    const btnDebate = page.locator('#btn-trigger-debate');
+    await expect(btnDebate).toBeVisible();
+    await btnDebate.click();
 
-    // Wait 3.5 seconds for characters to animate to desks, type, and speech bubbles to pop up
-    await page.waitForTimeout(3500);
+    // Wait 2.5 seconds for debate shockwaves, speech bubbles, and character movements to trigger
+    await page.waitForTimeout(2500);
 
-    // 5. Capture active multi-agent execution screenshot
-    const activePath = path.join(reportsDir, 'keos-office-active-concurrent.png');
-    await page.screenshot({ path: activePath, fullPage: false });
-    expect(fs.existsSync(activePath)).toBeTruthy();
+    // 5. Capture active drama screenshot
+    const dramaPath = path.join(reportsDir, 'keos-holographic-debate-drama.png');
+    await page.screenshot({ path: dramaPath, fullPage: false });
+    expect(fs.existsSync(dramaPath)).toBeTruthy();
 
-    // 6. Verify Log Stream has received logs
+    // 6. Verify Log Stream has entries
     const terminalLogs = page.locator('#log-stream .log-entry');
     await expect(terminalLogs.first()).toBeVisible();
   });
