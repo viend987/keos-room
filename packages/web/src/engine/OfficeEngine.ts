@@ -43,7 +43,7 @@ export interface AgentEntity {
   id: string;
   name: string;
   role: string;
-  harness: 'AGY' | 'CLAUDE' | 'CODEX' | 'SUBAGENT';
+  harness: string;
   spriteKey: string;
   x: number;
   y: number;
@@ -487,14 +487,30 @@ export class OfficeEngine {
 
   public ingestTelemetryEvent(payload: {
     agentId?: string;
-    harness?: 'AGY' | 'CLAUDE' | 'CODEX';
+    harness?: string;
     category?: string;
     message?: string;
+    account?: string;
   }): AgentEntity {
-    const targetId =
-      payload.agentId ||
-      (payload.harness === 'CLAUDE' ? 'claude-arch' : 'agy-dev');
+    const rawHarness = (payload.harness || 'AGY').toUpperCase();
+    let targetId = payload.agentId;
+
+    if (!targetId) {
+      if (rawHarness.includes('CLAUDE')) targetId = 'claude-arch';
+      else if (rawHarness.includes('CODEX') || rawHarness.includes('OPENCODE')) targetId = 'qa-director';
+      else if (rawHarness.includes('KIRO') || rawHarness.includes('KILO')) targetId = 'claude-eng';
+      else if (rawHarness.includes('AIDER') || rawHarness.includes('CURSOR') || rawHarness.includes('ROO')) targetId = 'agy-sec';
+      else targetId = 'agy-dev';
+    }
+
     const agent = this.agents.get(targetId) || Array.from(this.agents.values())[0];
+    if (payload.harness) {
+      agent.harness = payload.harness.toUpperCase();
+    }
+    if (payload.account && !agent.name.includes(payload.account.slice(0, 6))) {
+      agent.name = `${payload.account.slice(0, 8).toUpperCase()} [${agent.harness.slice(0, 4)}]`;
+    }
+
     const cat = (payload.category || 'IO_WRITE').toUpperCase();
 
     if (cat.includes('PLAN')) {
@@ -901,12 +917,17 @@ export class OfficeEngine {
       ctx.fillRect(ax + 2, ay + 4, 12, 24);
     }
 
-    const harnessColor =
-      agent.harness === 'AGY'
-        ? '#38bdf8'
-        : agent.harness === 'CLAUDE'
-        ? '#fb923c'
-        : '#34d399';
+    let harnessColor = '#38bdf8';
+    const h = (agent.harness || '').toUpperCase();
+    if (h.includes('AGY') || h.includes('ANTIGRAVITY')) harnessColor = '#38bdf8';
+    else if (h.includes('CLAUDE')) harnessColor = '#fb923c';
+    else if (h.includes('CODEX') || h.includes('OPENCODE')) harnessColor = '#34d399';
+    else if (h.includes('KIRO')) harnessColor = '#a855f7';
+    else if (h.includes('KILO')) harnessColor = '#ec4899';
+    else if (h.includes('AIDER')) harnessColor = '#eab308';
+    else if (h.includes('CURSOR')) harnessColor = '#6366f1';
+    else if (h.includes('ROO') || h.includes('CLINE')) harnessColor = '#14b8a6';
+    else harnessColor = '#94a3b8';
 
     ctx.font = 'bold 4.2px "JetBrains Mono", monospace';
     const labelWidth = agent.name.length * 2.7 + 6;

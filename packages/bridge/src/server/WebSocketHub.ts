@@ -5,7 +5,7 @@ import cors from 'cors';
 import { AgentDiscoveryDaemon } from '../discovery/AgentDiscoveryDaemon.js';
 import { UniversalNormalizer } from '../parser/UniversalNormalizer.js';
 import { MultiAgentMock } from '../mock/MultiAgentMock.js';
-import { KeosEvent, KeosSession, KeosTelemetryPayload } from '../types.js';
+import { KeosEvent, KeosHarness, KeosSession, KeosTelemetryPayload, KeosWing } from '../types.js';
 
 export class WebSocketHub {
   private app = express();
@@ -16,7 +16,7 @@ export class WebSocketHub {
 
   constructor(private port = 4040) {
     this.app.use(cors());
-    this.app.use(express.json());
+    this.app.use(express.json({ limit: '10mb' }));
 
     this.server = http.createServer(this.app);
     this.wss = new WebSocketServer({ server: this.server });
@@ -32,6 +32,7 @@ export class WebSocketHub {
     this.server.listen(this.port, () => {
       console.log(`[KEOS BRIDGE] Server listening on http://localhost:${this.port}`);
       console.log(`[KEOS BRIDGE] WebSocket ready at ws://localhost:${this.port}`);
+      console.log(`[KEOS BRIDGE] Universal Ingest API: POST http://localhost:${this.port}/api/ingest`);
     });
   }
 
@@ -41,47 +42,103 @@ export class WebSocketHub {
     this.server.close();
   }
 
+  private normalizeHarnessName(raw?: string): KeosHarness {
+    if (!raw) return 'GENERIC';
+    const s = raw.toUpperCase().trim();
+    if (s.includes('AGY') || s.includes('ANTIGRAVITY') || s.includes('GEMINI')) return 'ANTIGRAVITY';
+    if (s.includes('CLAUDE')) return 'CLAUDE_CODE';
+    if (s.includes('OPENCODE') || s.includes('CODEX') || s.includes('OPENAI')) return 'OPEN_CODEX';
+    if (s.includes('KIRO')) return 'KIRO';
+    if (s.includes('KILO')) return 'KILO';
+    if (s.includes('AIDER')) return 'AIDER';
+    if (s.includes('CURSOR')) return 'CURSOR';
+    if (s.includes('ROO') || s.includes('CLINE')) return 'ROO_CLINE';
+    return 'GENERIC';
+  }
+
   private setupRoutes() {
-    // Health check
+    // Health check & Active Matrix
     this.app.get('/api/status', (_req: Request, res: Response) => {
       res.json({
         status: 'ONLINE',
         activeSessions: this.discoveryDaemon.getActiveSessions(),
         connectedClients: this.clients.size,
-        zeroEmojiCompliant: true
+        zeroEmojiCompliant: true,
+        supportedHarnesses: [
+          'ANTIGRAVITY (IDE, CLI, VSCode, Desktop)',
+          'CLAUDE_CODE (CLI, VSCode, Desktop)',
+          'OPEN_CODEX (OpenCode, OpenAI Codex)',
+          'KIRO (Editor, CLI)',
+          'KILO (Kilo Code, CLI)',
+          'AIDER (Chat History)',
+          'CURSOR (IDE)',
+          'ROO_CLINE (VSCode Extensions)',
+          'GENERIC (REST Ingest & MCP Server)'
+        ]
       });
     });
 
-    // Ingest webhook endpoint
+    // Ingest universal webhook endpoint
     this.app.post('/api/ingest', (req: Request, res: Response) => {
-      const body = req.body as KeosTelemetryPayload;
-      if (!body.tool && !body.action) {
-        res.status(400).json({ error: 'Missing tool or action in payload' });
+      const body = req.body as KeosTelemetryPayload & {
+        command?: string;
+        path?: string;
+        file?: string;
+        name?: string;
+      };
+
+      const tool = body.tool || body.action || body.command || body.name;
+      if (!tool) {
+        res.status(400).json({ error: 'Missing tool, action, or command in payload' });
         return;
       }
 
-      const harness = (body.harness || 'GENERIC').toUpperCase() as any;
+      const harness = this.normalizeHarnessName(body.harness);
+      const target = body.target || body.path || body.file || '';
+      const sessionId = body.account ? `sess_${body.account}` : `sess_${harness.toLowerCase()}_${Date.now()}`;
+
+      // Pick wing based on harness
+      let wingId: KeosWing = 'WING_ALPHA';
+      if (harness === 'CLAUDE_CODE' || harness === 'KIRO' || harness === 'KILO') {
+        wingId = 'WING_BETA';
+      }
+
       const session: KeosSession = {
-        sessionId: `sess_manual_${Date.now()}`,
+        sessionId,
         harness,
         accountId: body.account || 'operator',
-        projectName: body.project || 'custom-project',
+        projectName: body.project || 'active-workspace',
         projectPath: body.projectPath || process.cwd(),
-        modelName: body.model || 'custom-llm',
-        wingId: 'WING_ALPHA',
+        modelName: body.model || `${harness}_AGENT`,
+        wingId,
         lastActiveTimestamp: Date.now()
       };
 
       this.discoveryDaemon.registerManualSession(session);
-      const event = UniversalNormalizer.normalize(session, body);
+
+      const payload: KeosTelemetryPayload = {
+        harness,
+        account: session.accountId,
+        project: session.projectName,
+        projectPath: session.projectPath,
+        model: session.modelName,
+        tool,
+        target,
+        status: body.status || 'SUCCESS',
+        category: body.category,
+        message: body.message,
+        details: body.details
+      };
+
+      const event = UniversalNormalizer.normalize(session, payload);
       this.broadcastEvent(event);
 
-      res.json({ success: true, eventId: event.id });
+      res.json({ success: true, eventId: event.id, harness, wingId });
     });
 
     // Trigger mock scenario via HTTP
     this.app.post('/api/mock/:scenario', (req: Request, res: Response) => {
-      const scenario = req.params.scenario.toUpperCase();
+      const scenario = String(req.params.scenario).toUpperCase();
       this.playScenario(scenario);
       res.json({ success: true, scenario });
     });
@@ -105,6 +162,20 @@ export class WebSocketHub {
           const parsed = JSON.parse(message.toString());
           if (parsed.type === 'PLAY_SCENARIO') {
             this.playScenario(parsed.scenario || 'SPRINT');
+          } else if (parsed.type === 'INGEST') {
+            const harness = this.normalizeHarnessName(parsed.payload?.harness);
+            const session: KeosSession = {
+              sessionId: `ws_${Date.now()}`,
+              harness,
+              accountId: parsed.payload?.account || 'operator',
+              projectName: parsed.payload?.project || 'active-project',
+              projectPath: process.cwd(),
+              modelName: `${harness}_AGENT`,
+              wingId: harness === 'CLAUDE_CODE' ? 'WING_BETA' : 'WING_ALPHA',
+              lastActiveTimestamp: Date.now()
+            };
+            const event = UniversalNormalizer.normalize(session, parsed.payload);
+            this.broadcastEvent(event);
           }
         } catch {
           // Ignore invalid messages

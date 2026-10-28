@@ -68,12 +68,14 @@ export class UniversalNormalizer {
       };
     }
 
-    // 3. Subagents
+    // 3. Subagents / Delegation
     if (
       tool === 'invoke_subagent' ||
       tool === 'define_subagent' ||
       tool === 'send_message' ||
-      tool === 'manage_subagents'
+      tool === 'manage_subagents' ||
+      tool === 'delegate_task' ||
+      tool === 'spawn_agent'
     ) {
       return {
         id: eventId,
@@ -90,17 +92,17 @@ export class UniversalNormalizer {
     }
 
     // 4. MCP Tools
-    if (tool === 'call_mcp_tool' || tool.startsWith('mcp_')) {
+    if (tool === 'call_mcp_tool' || tool.startsWith('mcp_') || tool.startsWith('mcp:')) {
       let mcpServer = 'EXTERNAL';
       if (payload.details && typeof payload.details.ServerName === 'string') {
         mcpServer = payload.details.ServerName.toUpperCase();
-      } else if (tool.startsWith('mcp_')) {
-        const parts = tool.split('_');
+      } else if (tool.startsWith('mcp_') || tool.startsWith('mcp:')) {
+        const parts = tool.split(/[_:]/);
         if (parts.length > 1) mcpServer = parts[1].toUpperCase();
       }
 
       let mcpRole: KeosRole = 'DEV';
-      if (mcpServer === 'REA') mcpRole = 'SECURITY';
+      if (mcpServer === 'REA' || mcpServer.includes('SEC')) mcpRole = 'SECURITY';
 
       return {
         id: eventId,
@@ -116,8 +118,15 @@ export class UniversalNormalizer {
       };
     }
 
-    // 5. File System Operations
-    if (tool === 'read_file') {
+    // 5. File System Operations (AGY: read_file/write_file, Claude: Read/Write/Edit, Codex/Kiro/Kilo/Aider)
+    if (
+      tool === 'read_file' ||
+      tool === 'read' ||
+      tool === 'view' ||
+      tool === 'cat' ||
+      tool === 'glob' ||
+      tool === 'grep'
+    ) {
       const isDoc = target.endsWith('.md') || target.endsWith('.txt') || target.endsWith('.json');
       return {
         id: eventId,
@@ -133,7 +142,14 @@ export class UniversalNormalizer {
       };
     }
 
-    if (tool === 'write_file' || tool === 'edit_file') {
+    if (
+      tool === 'write_file' ||
+      tool === 'edit_file' ||
+      tool === 'write' ||
+      tool === 'edit' ||
+      tool === 'patch' ||
+      tool === 'str_replace_editor'
+    ) {
       return {
         id: eventId,
         timestamp,
@@ -148,14 +164,23 @@ export class UniversalNormalizer {
       };
     }
 
-    // 6. Shell & Command Executions
-    if (tool === 'run_command' || tool === 'shell') {
+    // 6. Shell & Command Executions (AGY: run_command, Claude: Bash, OpenCode/Codex: shell/exec, Kiro/Kilo: terminal)
+    if (
+      tool === 'run_command' ||
+      tool === 'shell' ||
+      tool === 'bash' ||
+      tool === 'terminal' ||
+      tool === 'exec' ||
+      tool === 'command'
+    ) {
       const lowerTarget = target.toLowerCase();
       if (
         lowerTarget.includes('test') ||
         lowerTarget.includes('pytest') ||
         lowerTarget.includes('jest') ||
-        lowerTarget.includes('vitest')
+        lowerTarget.includes('vitest') ||
+        lowerTarget.includes('cargo test') ||
+        lowerTarget.includes('go test')
       ) {
         return {
           id: eventId,
@@ -186,7 +211,7 @@ export class UniversalNormalizer {
     }
 
     // 7. Web & Research
-    if (tool === 'search_web' || tool === 'browser') {
+    if (tool === 'search_web' || tool === 'browser' || tool === 'web_search' || tool === 'fetch') {
       return {
         id: eventId,
         timestamp,

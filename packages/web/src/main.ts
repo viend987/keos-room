@@ -130,10 +130,26 @@ function connectTelemetryBridge(): void {
     ws.onmessage = (event) => {
       try {
         const data = JSON.parse(event.data);
-        const updatedAgent = engine.ingestTelemetryEvent(data);
-        appendTelemetryLog(data.category || 'EVENT', updatedAgent.name, data.message || 'Telemetry signal');
-        if (engine.selectedAgentId === updatedAgent.id) {
-          updateDossier(updatedAgent);
+        if (data.type === 'EVENT' && data.event) {
+          const ev = data.event;
+          const updatedAgent = engine.ingestTelemetryEvent({
+            harness: ev.session?.harness,
+            account: ev.session?.accountId,
+            category: ev.category,
+            message: ev.detail
+          });
+          appendTelemetryLog(ev.badge || ev.category, updatedAgent.name, ev.detail || 'Telemetry signal');
+          if (engine.selectedAgentId === updatedAgent.id) {
+            updateDossier(updatedAgent);
+          }
+        } else if (data.type === 'SESSION_JOINED' || data.type === 'SESSION_UPDATED') {
+          appendTelemetryLog('SESSION', data.session.harness, `AI session connected: ${data.session.projectName} (${data.session.modelName})`);
+        } else {
+          const updatedAgent = engine.ingestTelemetryEvent(data);
+          appendTelemetryLog(data.category || 'EVENT', updatedAgent.name, data.message || 'Telemetry signal');
+          if (engine.selectedAgentId === updatedAgent.id) {
+            updateDossier(updatedAgent);
+          }
         }
       } catch {
         // Ignore malformed packets

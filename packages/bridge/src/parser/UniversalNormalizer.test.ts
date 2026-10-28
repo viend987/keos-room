@@ -74,6 +74,42 @@ describe('UniversalNormalizer Test Suite', () => {
     assert.strictEqual(event.animation, 'SALUTE');
   });
 
+  it('correctly normalizes Claude Code tool calls (Bash & Edit)', () => {
+    const claudeSession = { ...dummySession, harness: 'CLAUDE_CODE' as const };
+    const bashEvt = UniversalNormalizer.normalize(claudeSession, {
+      tool: 'Bash',
+      target: 'git status'
+    });
+    assert.strictEqual(bashEvt.category, 'SHELL');
+    assert.strictEqual(bashEvt.badge, '[EXEC_RUN]');
+
+    const editEvt = UniversalNormalizer.normalize(claudeSession, {
+      tool: 'Edit',
+      target: 'packages/web/src/main.ts'
+    });
+    assert.strictEqual(editEvt.category, 'CODE');
+    assert.strictEqual(editEvt.badge, '[IO_WRITE]');
+  });
+
+  it('correctly normalizes Kiro / Kilo / Codex tool calls (terminal & str_replace_editor)', () => {
+    const kiroSession = { ...dummySession, harness: 'KIRO' as const };
+    const kiroEvt = UniversalNormalizer.normalize(kiroSession, {
+      tool: 'str_replace_editor',
+      target: 'lib/core.py'
+    });
+    assert.strictEqual(kiroEvt.category, 'CODE');
+    assert.strictEqual(kiroEvt.badge, '[IO_WRITE]');
+
+    const kiloSession = { ...dummySession, harness: 'KILO' as const };
+    const kiloEvt = UniversalNormalizer.normalize(kiloSession, {
+      tool: 'terminal',
+      target: 'pytest tests/'
+    });
+    assert.strictEqual(kiloEvt.category, 'TEST');
+    assert.strictEqual(kiloEvt.badge, '[EXEC_TEST]');
+    assert.strictEqual(kiloEvt.role, 'QA');
+  });
+
   it('correctly uses fallback for unknown plugins without crashing', () => {
     const event = UniversalNormalizer.normalize(dummySession, {
       tool: 'quantum_optimizer_v9',

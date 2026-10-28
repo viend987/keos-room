@@ -2,7 +2,11 @@ export type KeosHarness =
   | 'ANTIGRAVITY' 
   | 'CLAUDE_CODE' 
   | 'OPEN_CODEX' 
+  | 'KIRO'
+  | 'KILO'
   | 'AIDER' 
+  | 'CURSOR'
+  | 'ROO_CLINE'
   | 'GENERIC';
 
 export type KeosCategory = 
