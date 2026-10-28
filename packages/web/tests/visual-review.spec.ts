@@ -15,11 +15,11 @@ test.describe('Keos Room Visual Review & Zero-Emoji Audit', () => {
     await page.goto('/');
 
     // 1. Wait for canvas element to be ready
-    const canvas = page.locator('#game-container canvas');
+    const canvas = page.locator('#office-canvas');
     await expect(canvas).toBeVisible({ timeout: 10000 });
 
-    // Wait 1 second for Phaser to complete scene setup
-    await page.waitForTimeout(1000);
+    // Wait 1.5 seconds for OfficeEngine to load layout, assets and complete first frames
+    await page.waitForTimeout(1500);
 
     // 2. Zero-Emoji Audit on full DOM
     const bodyText = await page.innerText('body');
@@ -31,20 +31,21 @@ test.describe('Keos Room Visual Review & Zero-Emoji Audit', () => {
     await page.screenshot({ path: baselinePath, fullPage: false });
     expect(fs.existsSync(baselinePath)).toBeTruthy();
 
-    // 4. Trigger Concurrent Projects Scenario
-    const btnConcurrent = page.locator('#btn-demo-concurrent');
-    await btnConcurrent.click();
+    // 4. Trigger Sprint / Concurrent Work Scenario
+    const btnSprint = page.locator('button[data-demo="SPRINT"]');
+    await expect(btnSprint).toBeVisible();
+    await btnSprint.click();
 
-    // Wait 4 seconds for characters to animate to desks, sit down, type, and speech bubbles to pop up
-    await page.waitForTimeout(4000);
+    // Wait 3.5 seconds for characters to animate to desks, type, and speech bubbles to pop up
+    await page.waitForTimeout(3500);
 
     // 5. Capture active multi-agent execution screenshot
     const activePath = path.join(reportsDir, 'keos-office-active-concurrent.png');
     await page.screenshot({ path: activePath, fullPage: false });
     expect(fs.existsSync(activePath)).toBeTruthy();
 
-    // 6. Verify Terminal Feed has received logs
-    const terminalLogs = page.locator('#terminal-feed .log-line');
+    // 6. Verify Log Stream has received logs
+    const terminalLogs = page.locator('#log-stream .log-entry');
     await expect(terminalLogs.first()).toBeVisible();
   });
 });

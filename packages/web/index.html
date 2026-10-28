@@ -1,27 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="id">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Keos Room - Agent Telemetry Virtual Office</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>KEOS ROOM // TACTICAL AGENT VISUALIZER</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700;800&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg-void: #06090e;
-      --bg-panel: rgba(13, 19, 29, 0.88);
-      --bg-card: rgba(22, 31, 46, 0.7);
-      --border-dim: rgba(255, 255, 255, 0.08);
-      --border-bright: rgba(88, 166, 255, 0.35);
-      --text-main: #e6edf3;
-      --text-muted: #8b949e;
-      --accent-cyan: #58a6ff;
-      --accent-amber: #f0883e;
-      --accent-green: #3fb950;
-      --accent-red: #f85149;
-      --accent-gold: #e3b341;
-      --font-mono: 'JetBrains Mono', 'Share Tech Mono', monospace;
+      --bg-void: #06090f;
+      --bg-panel: rgba(12, 18, 30, 0.92);
+      --bg-card: #111a2e;
+      --border-dim: #1e293b;
+      --border-bright: #38bdf8;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-agy: #38bdf8;
+      --accent-claude: #fb923c;
+      --accent-ok: #10b981;
+      --accent-warn: #f59e0b;
+      --accent-err: #ef4444;
     }
 
     * {
@@ -31,578 +30,321 @@
       user-select: none;
     }
 
-    html, body {
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
+    body {
       background: var(--bg-void);
       color: var(--text-main);
-      font-family: var(--font-mono);
+      font-family: 'JetBrains Mono', monospace;
+      height: 100vh;
+      width: 100vw;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
     }
 
-    /* ── Top Command Bar ── */
-    header {
-      height: 52px;
+    /* TOP COMMAND BAR */
+    .command-bar {
+      height: 48px;
       background: var(--bg-panel);
-      backdrop-filter: blur(12px);
       border-bottom: 1px solid var(--border-dim);
       display: flex;
       align-items: center;
       justify-content: space-between;
       padding: 0 16px;
-      z-index: 20;
+      z-index: 30;
     }
 
-    .brand-section {
+    .brand-cluster {
       display: flex;
       align-items: center;
       gap: 12px;
     }
 
-    .brand-logo {
+    .brand-title {
+      font-family: 'Silkscreen', monospace;
+      font-size: 15px;
+      letter-spacing: 1px;
+      color: var(--text-main);
       display: flex;
       align-items: center;
       gap: 8px;
     }
 
-    .brand-led {
+    .led-dot {
       width: 8px;
       height: 8px;
+      background: var(--accent-ok);
+      box-shadow: 0 0 8px var(--accent-ok);
+      display: inline-block;
       border-radius: 50%;
-      background: var(--accent-cyan);
-      box-shadow: 0 0 10px var(--accent-cyan);
-      animation: pulse-glow 2s infinite ease-in-out;
+      animation: pulse-led 2s infinite ease-in-out;
     }
 
-    @keyframes pulse-glow {
-      0%, 100% { opacity: 0.6; transform: scale(0.9); }
-      50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 14px var(--accent-cyan); }
+    @keyframes pulse-led {
+      0%, 100% { opacity: 0.7; transform: scale(0.95); }
+      50% { opacity: 1; transform: scale(1.1); box-shadow: 0 0 12px var(--accent-ok); }
     }
 
-    .brand-title {
-      font-size: 15px;
+    .status-pills {
+      display: flex;
+      gap: 8px;
+    }
+
+    .pill {
+      font-size: 11px;
       font-weight: 700;
-      letter-spacing: 1.5px;
-      color: #fff;
-      text-transform: uppercase;
-    }
-
-    .brand-subtitle {
-      font-size: 10px;
-      color: var(--text-muted);
-      letter-spacing: 0.5px;
-      border-left: 1px solid var(--border-dim);
-      padding-left: 10px;
-    }
-
-    /* ── Live AI Harness Badges ── */
-    .harness-strip {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .harness-capsule {
-      font-size: 10px;
-      font-weight: 500;
-      padding: 4px 10px;
-      border-radius: 4px;
-      background: rgba(0, 0, 0, 0.4);
+      padding: 3px 8px;
       border: 1px solid var(--border-dim);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .harness-capsule.agy {
-      border-color: rgba(88, 166, 255, 0.4);
-      color: var(--accent-cyan);
-    }
-
-    .harness-capsule.claude {
-      border-color: rgba(240, 136, 62, 0.4);
-      color: var(--accent-amber);
-    }
-
-    .harness-capsule.online {
-      border-color: rgba(63, 185, 80, 0.4);
-      color: var(--accent-green);
-    }
-
-    .dot-indicator {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: currentColor;
-    }
-
-    /* ── Header Controls ── */
-    .header-controls {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .btn-group {
-      display: flex;
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border-dim);
-      border-radius: 4px;
-      padding: 2px;
-      gap: 2px;
-    }
-
-    button {
-      background: transparent;
-      border: none;
+      background: var(--bg-card);
       color: var(--text-muted);
-      font-family: var(--font-mono);
-      font-size: 10px;
-      font-weight: 500;
+    }
+
+    .pill.agy { border-color: var(--accent-agy); color: var(--accent-agy); }
+    .pill.claude { border-color: var(--accent-claude); color: var(--accent-claude); }
+    .pill.ws-ok { border-color: var(--accent-ok); color: var(--accent-ok); }
+
+    .wing-nav {
+      display: flex;
+      gap: 4px;
+    }
+
+    .btn-tac {
+      background: var(--bg-card);
+      color: var(--text-main);
+      border: 1px solid var(--border-dim);
       padding: 5px 10px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 11px;
+      font-weight: 700;
       cursor: pointer;
-      border-radius: 3px;
-      transition: all 0.15s ease;
-      display: flex;
-      align-items: center;
-      gap: 5px;
+      transition: all 0.12s ease;
     }
 
-    button:hover {
-      color: #fff;
-      background: rgba(255, 255, 255, 0.08);
+    .btn-tac:hover, .btn-tac.active {
+      border-color: var(--border-bright);
+      background: rgba(56, 189, 248, 0.14);
+      color: #ffffff;
     }
 
-    button.active {
-      color: var(--accent-cyan);
-      background: rgba(88, 166, 255, 0.15);
-      border: 1px solid rgba(88, 166, 255, 0.3);
-    }
-
-    .btn-pill {
-      border: 1px solid var(--border-dim);
-      background: rgba(0, 0, 0, 0.3);
-      padding: 5px 10px;
-      border-radius: 4px;
-    }
-
-    .btn-pill:hover {
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-    }
-
-    /* ── Main Viewport Container ── */
-    #main-layout {
+    /* MAIN WORKSPACE */
+    .viewport-wrap {
       position: relative;
       flex: 1;
-      display: flex;
+      width: 100%;
       overflow: hidden;
-    }
-
-    #game-container {
-      flex: 1;
-      height: 100%;
-      position: relative;
-      background: #080c14;
-      overflow: hidden;
-      cursor: grab;
-    }
-
-    #game-container:active {
-      cursor: grabbing;
     }
 
     #office-canvas {
       width: 100%;
       height: 100%;
       display: block;
+      cursor: grab;
       image-rendering: pixelated;
     }
 
-    /* ── Floating Showcase Demo Pill Dock ── */
+    #office-canvas:active {
+      cursor: grabbing;
+    }
+
+    /* FLOATING DEMO DOCK */
     .demo-dock {
       position: absolute;
-      bottom: 16px;
       left: 16px;
+      bottom: 16px;
       background: var(--bg-panel);
-      backdrop-filter: blur(12px);
       border: 1px solid var(--border-dim);
-      padding: 6px;
-      border-radius: 6px;
+      padding: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      z-index: 20;
+      backdrop-filter: blur(6px);
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.7);
+    }
+
+    .dock-header {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 1px;
+      border-bottom: 1px solid var(--border-dim);
+      padding-bottom: 4px;
+    }
+
+    .dock-buttons {
       display: flex;
       gap: 6px;
-      z-index: 10;
-      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.6);
+      flex-wrap: wrap;
     }
 
-    .demo-dock button {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid var(--border-dim);
-      color: var(--text-main);
-      padding: 6px 12px;
-      border-radius: 4px;
-    }
-
-    .demo-dock button:hover {
-      background: rgba(88, 166, 255, 0.15);
-      border-color: var(--accent-cyan);
-      color: var(--accent-cyan);
-    }
-
-    /* ── Agent Dossier Drawer (Right Side Flyout) ── */
-    #agent-dossier {
+    /* RIGHT AGENT DOSSIER FLYOUT */
+    .dossier-panel {
       position: absolute;
       top: 16px;
       right: 16px;
       width: 290px;
       background: var(--bg-panel);
-      backdrop-filter: blur(16px);
-      border: 1px solid var(--border-dim);
-      border-radius: 6px;
-      padding: 16px;
-      z-index: 15;
-      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.7);
-      transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.25s ease;
+      border: 1px solid var(--border-bright);
+      padding: 14px;
+      z-index: 25;
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      gap: 10px;
+      box-shadow: 0 12px 30px rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(8px);
     }
 
-    #agent-dossier.hidden {
-      transform: translateX(330px);
-      opacity: 0;
-      pointer-events: none;
+    .dossier-panel.hidden {
+      display: none;
     }
 
-    .dossier-header {
+    .dossier-top {
       display: flex;
       justify-content: space-between;
-      align-items: flex-start;
+      align-items: center;
       border-bottom: 1px solid var(--border-dim);
-      padding-bottom: 10px;
+      padding-bottom: 8px;
     }
 
     .dossier-name {
-      font-size: 14px;
-      font-weight: 700;
-      color: #fff;
+      font-family: 'Silkscreen', monospace;
+      font-size: 13px;
+      color: var(--accent-agy);
     }
 
-    .dossier-role {
-      font-size: 10px;
-      color: var(--accent-cyan);
-      margin-top: 2px;
+    .metric-row {
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      font-size: 11px;
     }
 
-    .btn-close {
-      background: transparent;
-      padding: 2px 6px;
-      font-size: 12px;
+    .bar-track {
+      width: 100%;
+      height: 8px;
+      background: #090d16;
+      border: 1px solid var(--border-dim);
+    }
+
+    .bar-fill {
+      height: 100%;
+      background: var(--accent-ok);
+      transition: width 0.2s ease;
+    }
+
+    .bar-fill.warn { background: var(--accent-err); }
+
+    /* ACTIVITY LOG DRAWER */
+    .telemetry-drawer {
+      height: 125px;
+      background: var(--bg-panel);
+      border-top: 1px solid var(--border-dim);
+      display: flex;
+      flex-direction: column;
+      z-index: 30;
+    }
+
+    .drawer-bar {
+      padding: 5px 16px;
+      background: #090e1a;
+      border-bottom: 1px solid var(--border-dim);
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
       color: var(--text-muted);
     }
 
-    .dossier-portrait-card {
-      background: rgba(0, 0, 0, 0.5);
-      border: 1px solid var(--border-dim);
-      border-radius: 4px;
-      padding: 10px;
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-
-    .portrait-canvas {
-      width: 48px;
-      height: 64px;
-      background: #111722;
-      border: 1px solid var(--border-dim);
-      border-radius: 3px;
-      image-rendering: pixelated;
-    }
-
-    .dossier-status-block {
+    .log-stream {
       flex: 1;
+      overflow-y: auto;
+      padding: 8px 16px;
+      font-size: 11px;
       display: flex;
       flex-direction: column;
       gap: 4px;
     }
 
-    .dossier-status-pill {
-      font-size: 9px;
-      padding: 2px 6px;
-      border-radius: 2px;
-      background: rgba(88, 166, 255, 0.15);
-      color: var(--accent-cyan);
-      border: 1px solid rgba(88, 166, 255, 0.3);
-      width: fit-content;
-    }
-
-    .dossier-harness {
-      font-size: 9px;
-      color: var(--text-muted);
-    }
-
-    .dossier-stats-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 8px;
-      font-size: 10px;
-    }
-
-    .stat-box {
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid var(--border-dim);
-      border-radius: 4px;
-      padding: 6px 8px;
-    }
-
-    .stat-label {
-      font-size: 8px;
-      color: var(--text-muted);
-      text-transform: uppercase;
-    }
-
-    .stat-val {
-      font-size: 12px;
-      font-weight: 700;
-      color: #fff;
-      margin-top: 2px;
-    }
-
-    .dossier-actions {
+    .log-entry {
       display: flex;
-      gap: 6px;
-      margin-top: 4px;
-    }
-
-    .dossier-actions button {
-      flex: 1;
-      justify-content: center;
-      background: rgba(88, 166, 255, 0.1);
-      border: 1px solid rgba(88, 166, 255, 0.3);
-      color: var(--accent-cyan);
-      padding: 6px 0;
-    }
-
-    .dossier-actions button:hover {
-      background: rgba(88, 166, 255, 0.25);
-    }
-
-    /* ── Bottom Telemetry & Activity Drawer ── */
-    #bottom-drawer {
-      height: 110px;
-      background: var(--bg-panel);
-      backdrop-filter: blur(12px);
-      border-top: 1px solid var(--border-dim);
-      display: flex;
-      flex-direction: column;
-      z-index: 20;
-      transition: height 0.2s ease;
-    }
-
-    .drawer-tabbar {
-      height: 28px;
-      background: rgba(0, 0, 0, 0.4);
-      border-bottom: 1px solid var(--border-dim);
-      display: flex;
+      gap: 10px;
       align-items: center;
-      justify-content: space-between;
-      padding: 0 12px;
     }
 
-    .drawer-tabs {
-      display: flex;
-      gap: 12px;
-      font-size: 10px;
-    }
-
-    .drawer-tab {
-      color: var(--text-muted);
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .drawer-tab.active {
-      color: var(--accent-cyan);
-      font-weight: 700;
-    }
-
-    .terminal-feed {
-      flex: 1;
-      padding: 6px 12px;
-      overflow-y: auto;
-      font-size: 10px;
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-    }
-
-    .log-line {
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      line-height: 1.4;
-      color: var(--text-muted);
-    }
-
-    .log-line .ts {
-      color: #484f58;
-      font-size: 9px;
-    }
-
-    .log-line .wing {
-      color: var(--accent-cyan);
-      font-weight: 500;
-    }
-
-    .log-line .badge {
-      color: var(--accent-amber);
-      font-weight: 700;
-    }
-
-    .log-line .detail {
-      color: #c9d1d9;
-    }
+    .log-time { color: var(--text-muted); }
+    .log-tag { font-weight: 700; color: var(--accent-agy); }
   </style>
 </head>
 <body>
-  <!-- Top Command Bar -->
-  <header>
-    <div class="brand-section">
-      <div class="brand-logo">
-        <div class="brand-led"></div>
-        <div class="brand-title">KEOS ROOM</div>
+  <header class="command-bar">
+    <div class="brand-cluster">
+      <div class="brand-title">
+        <span class="led-dot"></span>
+        <span>KEOS ROOM // OS v2.4</span>
       </div>
-      <div class="brand-subtitle">AGENT TELEMETRY LIVE FLOOR</div>
-    </div>
-
-    <!-- Live Harness Status Capsules -->
-    <div class="harness-strip">
-      <div class="harness-capsule agy">
-        <div class="dot-indicator"></div>
-        <span>[AGY: ACTIVE]</span>
-      </div>
-      <div class="harness-capsule claude">
-        <div class="dot-indicator"></div>
-        <span>[CLAUDE: READY]</span>
-      </div>
-      <div id="connection-status" class="harness-capsule online">
-        <div class="dot-indicator"></div>
-        <span>[WS: CONNECTED]</span>
-      </div>
-      <div class="harness-capsule">
-        <span>[POLICY: ZERO_EMOJI]</span>
-      </div>
-      <div id="session-count" class="harness-capsule">
-        <span>[AGENTS: 6 ONLINE]</span>
+      <div class="status-pills">
+        <span class="pill agy">[HARNESS: AGY ACTIVE]</span>
+        <span class="pill claude">[HARNESS: CLAUDE READY]</span>
+        <span id="ws-indicator" class="pill ws-ok">[BRIDGE: ONLINE]</span>
       </div>
     </div>
 
-    <!-- Navigation & Zoom Controls -->
-    <div class="header-controls">
-      <div class="btn-group">
-        <button id="btn-view-all" class="active">[ALL WINGS]</button>
-        <button id="btn-view-alpha">[ALPHA (AGY)]</button>
-        <button id="btn-view-warroom">[WAR ROOM]</button>
-        <button id="btn-view-beta">[BETA (CLAUDE)]</button>
-        <button id="btn-view-pantry">[PANTRY & CAFE]</button>
-      </div>
+    <nav class="wing-nav">
+      <button class="btn-tac active" data-wing="ALL">[ALL WINGS]</button>
+      <button class="btn-tac" data-wing="ALPHA">[WING ALPHA]</button>
+      <button class="btn-tac" data-wing="WAR_ROOM">[WAR ROOM]</button>
+      <button class="btn-tac" data-wing="BETA">[WING BETA]</button>
+      <button class="btn-tac" data-wing="PANTRY">[PANTRY & LOUNGE]</button>
+    </nav>
 
-      <div class="btn-group">
-        <button id="btn-zoom-out">[-]</button>
-        <button id="btn-zoom-reset">[RESET]</button>
-        <button id="btn-zoom-in">[+]</button>
-      </div>
-
-      <button id="btn-audio-toggle" class="btn-pill">[AUDIO: ON]</button>
+    <div class="wing-nav">
+      <button id="btn-zoom-in" class="btn-tac">[ZOOM +]</button>
+      <button id="btn-zoom-out" class="btn-tac">[ZOOM -]</button>
+      <button id="btn-audio" class="btn-tac">[SFX: ON]</button>
     </div>
   </header>
 
-  <!-- Main Viewport Layout -->
-  <div id="main-layout">
-    <!-- Floating Demo Showcase Dock -->
-    <div class="demo-dock">
-      <button id="btn-demo-sprint">[DEMO: SPRINT]</button>
-      <button id="btn-demo-concurrent">[DEMO: CONCURRENT PROJECTS]</button>
-      <button id="btn-demo-chaos">[DEMO: QA PANIC & FIX]</button>
-      <button id="btn-demo-coffee">[DEMO: COFFEE BREAK]</button>
+  <main class="viewport-wrap">
+    <canvas id="office-canvas"></canvas>
+
+    <section class="demo-dock">
+      <div class="dock-header">SIMULATION TRIGGER DECK // ZERO-EMOJI MODE</div>
+      <div class="dock-buttons">
+        <button class="btn-tac" data-demo="SPRINT">[DEMO: SPRINT WORK]</button>
+        <button class="btn-tac" data-demo="WAR_ROOM">[DEMO: WAR ROOM SYNC]</button>
+        <button class="btn-tac" data-demo="PANIC">[DEMO: QA BUILD ALERT]</button>
+        <button class="btn-tac" data-demo="COFFEE">[DEMO: ESPRESSO BREAK]</button>
+      </div>
+    </section>
+
+    <aside id="dossier-panel" class="dossier-panel hidden">
+      <div class="dossier-top">
+        <span id="dos-name" class="dossier-name">VEX [ARCHITECT]</span>
+        <button id="dos-close" class="btn-tac">[X]</button>
+      </div>
+      <div style="font-size: 11px; color: var(--text-muted);" id="dos-role">Lead Planner</div>
+      <div style="font-size: 11px;">STATUS: <strong id="dos-state" style="color: var(--accent-ok);">CODING</strong></div>
+      <div style="font-size: 11px;">TASK: <span id="dos-task" style="color: var(--text-main);">Designing schema</span></div>
+      <div class="metric-row">
+        <span>CAFFEINE RESERVE (<span id="dos-caf-val">92%</span>)</span>
+        <div class="bar-track"><div id="dos-caf-bar" class="bar-fill" style="width: 92%;"></div></div>
+      </div>
+      <div class="metric-row">
+        <span>PANIC / STRESS INDEX (<span id="dos-pan-val">5%</span>)</span>
+        <div class="bar-track"><div id="dos-pan-bar" class="bar-fill warn" style="width: 5%;"></div></div>
+      </div>
+      <div style="font-size: 11px;">LOC WRITTEN: <strong id="dos-loc">1,420</strong></div>
+      <div style="display: flex; gap: 6px; margin-top: 4px;">
+        <button id="btn-send-coffee" class="btn-tac" style="flex: 1;">[SEND ESPRESSO]</button>
+        <button id="btn-ping-agent" class="btn-tac" style="flex: 1;">[PING TASK]</button>
+      </div>
+    </aside>
+  </main>
+
+  <footer class="telemetry-drawer">
+    <div class="drawer-bar">
+      <span>REAL-TIME TELEMETRY STREAM // PORT 4040</span>
+      <span>GRID: 32x22 [16PX TILE] // Y-SORT ENABLED</span>
     </div>
-
-    <!-- Virtual Office Canvas -->
-    <div id="game-container">
-      <canvas id="office-canvas"></canvas>
-    </div>
-
-    <!-- Interactive Agent Dossier Drawer (Flyout) -->
-    <div id="agent-dossier" class="hidden">
-      <div class="dossier-header">
-        <div>
-          <div id="dossier-name" class="dossier-name">Kaelen</div>
-          <div id="dossier-title" class="dossier-role">Principal Systems Architect</div>
-        </div>
-        <button id="btn-close-dossier" class="btn-close">[X]</button>
-      </div>
-
-      <div class="dossier-portrait-card">
-        <canvas id="portrait-canvas" class="portrait-canvas" width="48" height="64"></canvas>
-        <div class="dossier-status-block">
-          <div id="dossier-status" class="dossier-status-pill">[STATE: CODING]</div>
-          <div id="dossier-harness" class="dossier-harness">ANTIGRAVITY // GEMINI 3.8 FLASH</div>
-          <div id="dossier-wing" style="font-size: 8px; color: var(--accent-cyan);">WING ALPHA // CORE DEV</div>
-        </div>
-      </div>
-
-      <div class="dossier-stats-grid">
-        <div class="stat-box">
-          <div class="stat-label">LINES WRITTEN</div>
-          <div id="stat-lines" class="stat-val">420</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">CAFFEINE LEVEL</div>
-          <div id="stat-caffeine" class="stat-val">95%</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">TASKS COMPLETED</div>
-          <div id="stat-tasks" class="stat-val">8</div>
-        </div>
-        <div class="stat-box">
-          <div class="stat-label">PANIC LEVEL</div>
-          <div id="stat-panic" class="stat-val" style="color: var(--accent-green);">5%</div>
-        </div>
-      </div>
-
-      <div class="dossier-actions">
-        <button id="btn-cheer-agent">[CHEER AGENT]</button>
-        <button id="btn-coffee-agent">[SEND ESPRESSO]</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- Bottom Activity & Telemetry Drawer -->
-  <div id="bottom-drawer">
-    <div class="drawer-tabbar">
-      <div class="drawer-tabs">
-        <span class="drawer-tab active">[ALL EVENTS]</span>
-        <span class="drawer-tab">[CODE & COMMITS]</span>
-        <span class="drawer-tab">[TESTS & QA]</span>
-        <span class="drawer-tab">[DISCUSSIONS]</span>
-      </div>
-      <div style="font-size: 9px; color: var(--text-muted);">STREAM: WS://LOCALHOST:4040</div>
-    </div>
-
-    <div id="terminal-feed" class="terminal-feed">
-      <div class="log-line">
-        <span class="ts">[00:00:00]</span>
-        <span class="badge">[SYS_INIT]</span>
-        <span class="wing">[CORE]</span>
-        <span class="detail">Keos Room virtual floor initialized. Standby for agent telemetry stream...</span>
-      </div>
-    </div>
-  </div>
+    <div id="log-stream" class="log-stream"></div>
+  </footer>
 
   <script type="module" src="/src/main.ts"></script>
 </body>

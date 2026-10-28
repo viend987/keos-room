@@ -21,6 +21,32 @@ export class SoundEffects {
     return this.isMuted;
   }
 
+  // 0. Mechanical UI Button Click
+  public static playClick() {
+    const ctx = this.getContext();
+    if (!ctx) return;
+
+    const osc = ctx.createOscillator();
+    const gain = ctx.createGain();
+    osc.type = 'triangle';
+    osc.frequency.setValueAtTime(850, ctx.currentTime);
+    osc.frequency.exponentialRampToValueAtTime(320, ctx.currentTime + 0.03);
+
+    gain.gain.setValueAtTime(0.06, ctx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.03);
+
+    osc.connect(gain);
+    gain.connect(ctx.destination);
+
+    osc.start();
+    osc.stop(ctx.currentTime + 0.03);
+  }
+
+  // Instance method alias for compatibility
+  public playClick() {
+    SoundEffects.playClick();
+  }
+
   // 1. Mechanical Keyboard Click (Typing)
   public static playKeyboardClick() {
     const ctx = this.getContext();
