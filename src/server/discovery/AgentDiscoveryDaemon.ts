@@ -2,7 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { EventEmitter } from 'node:events';
-import { KeosHarness, KeosSession, KeosTelemetryPayload, KeosWing } from '../types.js';
+import { KeosHarness, KeosSession, KeosTelemetryPayload, KeosWing } from '../../types.js';
 
 export class AgentDiscoveryDaemon extends EventEmitter {
   private activeSessions = new Map<string, KeosSession>();

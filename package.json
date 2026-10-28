@@ -1,20 +1,33 @@
 {
   "name": "keos-room",
-  "version": "0.1.0",
+  "version": "2.4.0",
+  "description": "Tactical 2D Pixel-Art Agent Telemetry Virtual Office",
+  "type": "module",
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "main": "src/server/server.ts",
   "scripts": {
-    "start": "npm run start --workspace=@keos/bridge",
-    "dev:bridge": "npm run dev --workspace=@keos/bridge",
-    "dev:web": "npm run dev --workspace=@keos/web",
-    "dev": "npm run dev:bridge",
-    "build": "npm run build --workspaces",
-    "test": "npm run test --workspace=@keos/bridge",
-    "test:visual": "npm run test:visual --workspace=@keos/web"
+    "start": "tsx src/server/server.ts",
+    "dev": "tsx src/server/server.ts",
+    "build": "vite build",
+    "preview": "vite preview",
+    "mcp": "tsx src/server/mcp/KeosMcpServer.ts --mcp",
+    "test": "tsx --test src/server/**/*.test.ts",
+    "test:visual": "playwright test"
+  },
+  "dependencies": {
+    "chokidar": "^4.0.3",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "ws": "^8.18.1"
   },
   "devDependencies": {
-    "typescript": "^5.7.3"
+    "@playwright/test": "^1.50.1",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^5.0.0",
+    "@types/node": "^22.13.4",
+    "@types/ws": "^8.5.14",
+    "tsx": "^4.19.3",
+    "typescript": "^5.7.3",
+    "vite": "^6.2.0"
   }
 }

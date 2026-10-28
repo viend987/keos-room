@@ -5,7 +5,7 @@ export default defineConfig({
   fullyParallel: false,
   timeout: 45000,
   use: {
-    baseURL: 'http://127.0.0.1:5173',
+    baseURL: 'http://127.0.0.1:4040',
     trace: 'on-first-retry',
     viewport: { width: 1200, height: 800 }
   },
@@ -16,8 +16,8 @@ export default defineConfig({
     }
   ],
   webServer: {
-    command: 'npx vite --host 127.0.0.1 --port 5173',
-    url: 'http://127.0.0.1:5173',
+    command: 'npm start',
+    url: 'http://127.0.0.1:4040/api/status',
     reuseExistingServer: true,
     timeout: 30000
   }

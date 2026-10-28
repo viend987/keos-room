@@ -6,7 +6,7 @@ import {
   KeosSession,
   KeosStatus,
   KeosTelemetryPayload
-} from '../types.js';
+} from '../../types.js';
 
 export class UniversalNormalizer {
   private static eventCounter = 0;

@@ -2,9 +2,9 @@ import { WebSocketServer, WebSocket } from 'ws';
 import http from 'node:http';
 import express, { Request, Response } from 'express';
 import cors from 'cors';
-import { AgentDiscoveryDaemon } from '../discovery/AgentDiscoveryDaemon.js';
-import { UniversalNormalizer } from '../parser/UniversalNormalizer.js';
-import { MultiAgentMock } from '../mock/MultiAgentMock.js';
+import { AgentDiscoveryDaemon } from './discovery/AgentDiscoveryDaemon.js';
+import { UniversalNormalizer } from './parser/UniversalNormalizer.js';
+import { MultiAgentMock } from './mock/MultiAgentMock.js';
 import { KeosEvent, KeosHarness, KeosSession, KeosTelemetryPayload, KeosWing } from '../types.js';
 
 export class WebSocketHub {

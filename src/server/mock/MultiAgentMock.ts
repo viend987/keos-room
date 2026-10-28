@@ -1,4 +1,4 @@
-import { KeosSession, KeosTelemetryPayload } from '../types.js';
+import { KeosSession, KeosTelemetryPayload } from '../../types.js';
 
 export interface MockStep {
   delayMs: number;

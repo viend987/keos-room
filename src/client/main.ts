@@ -118,14 +118,16 @@ document.getElementById('btn-ping-agent')?.addEventListener('click', () => {
   }
 });
 
-// Koneksi otomatis ke Bridge Daemon (Port 4040)
+// Koneksi otomatis ke Unified Bridge
 function connectTelemetryBridge(): void {
   const wsBadge = document.getElementById('ws-indicator')!;
   try {
-    const ws = new WebSocket('ws://127.0.0.1:4040');
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+    const host = window.location.host || '127.0.0.1:4040';
+    const ws = new WebSocket(`${protocol}//${host}`);
     ws.onopen = () => {
-      wsBadge.textContent = '[BRIDGE: LIVE 4040]';
-      appendTelemetryLog('WS_OPEN', 'BRIDGE_HUB', 'Connected to local telemetry daemon on port 4040.');
+      wsBadge.textContent = `[BRIDGE: LIVE ${host}]`;
+      appendTelemetryLog('WS_OPEN', 'BRIDGE_HUB', `Connected to local telemetry hub on ${host}.`);
     };
     ws.onmessage = (event) => {
       try {

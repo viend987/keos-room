@@ -1,7 +1,7 @@
 import { describe, it } from 'node:test';
 import assert from 'node:assert';
 import { UniversalNormalizer } from './UniversalNormalizer.js';
-import { KeosSession } from '../types.js';
+import { KeosSession } from '../../types.js';
 
 describe('UniversalNormalizer Test Suite', () => {
   const dummySession: KeosSession = {
