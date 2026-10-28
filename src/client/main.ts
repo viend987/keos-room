@@ -3,6 +3,9 @@ import { Office3DEngine } from './engine/Office3DEngine';
 const container = document.getElementById('canvas-container') as HTMLElement;
 const logStream = document.getElementById('log-stream') as HTMLElement;
 const fpsMeter = document.getElementById('fps-meter') as HTMLElement;
+const telemetryDrawer = document.getElementById('telemetry-drawer') as HTMLElement;
+const btnToggleDialogue = document.getElementById('btn-toggle-dialogue');
+const btnDrawerCollapse = document.getElementById('btn-drawer-collapse');
 
 const engine = new Office3DEngine(container);
 engine.start();
@@ -36,6 +39,22 @@ document.getElementById('btn-reset-cam')?.addEventListener('click', () => {
   engine.resetCamera();
   engine.soundEffects.playButtonClick();
 });
+
+// Hide / Show Dialogue Drawer Toggle
+let dialogueHidden = false;
+function toggleDialogueDrawer(): void {
+  dialogueHidden = !dialogueHidden;
+  if (telemetryDrawer) {
+    telemetryDrawer.classList.toggle('collapsed', dialogueHidden);
+  }
+  if (btnToggleDialogue) {
+    btnToggleDialogue.textContent = dialogueHidden ? 'Show Dialogue' : 'Hide Dialogue';
+  }
+  engine.soundEffects.playButtonClick();
+}
+
+btnToggleDialogue?.addEventListener('click', toggleDialogueDrawer);
+btnDrawerCollapse?.addEventListener('click', toggleDialogueDrawer);
 
 // Sound Toggle
 let audioMuted = false;

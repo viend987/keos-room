@@ -10,7 +10,7 @@
   <style>
     :root {
       --bg-warm: #f8fafc;
-      --bg-header: rgba(255, 255, 255, 0.92);
+      --bg-header: rgba(255, 255, 255, 0.94);
       --bg-card: #ffffff;
       --border-subtle: #e2e8f0;
       --border-focus: #3b82f6;
@@ -74,19 +74,16 @@
       color: var(--accent-primary);
     }
 
-    .led-dot {
-      width: 8px;
-      height: 8px;
-      background: var(--accent-emerald);
-      box-shadow: 0 0 10px var(--accent-emerald);
-      display: inline-block;
-      border-radius: 50%;
-      animation: pulse-led 2s infinite ease-in-out;
-    }
-
-    @keyframes pulse-led {
-      0%, 100% { opacity: 0.7; transform: scale(0.95); }
-      50% { opacity: 1; transform: scale(1.15); box-shadow: 0 0 14px var(--accent-emerald); }
+    .badge-status {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      background: #ecfdf5;
+      color: #059669;
+      border: 1px solid #a7f3d0;
+      padding: 2px 7px;
+      border-radius: 4px;
     }
 
     .status-pills {
@@ -104,12 +101,6 @@
       background: #f1f5f9;
       color: var(--text-muted);
       border-radius: 4px;
-    }
-
-    .pill.emerald {
-      border-color: #a7f3d0;
-      background: #ecfdf5;
-      color: #059669;
     }
 
     .pill.blue {
@@ -152,13 +143,30 @@
       background: #f8fafc;
     }
 
+    .btn-subtle {
+      background: transparent;
+      border: none;
+      color: var(--text-muted);
+      font-size: 11px;
+      font-family: 'JetBrains Mono', monospace;
+      cursor: pointer;
+      padding: 2px 6px;
+      border-radius: 4px;
+      transition: all 0.15s ease;
+    }
+
+    .btn-subtle:hover {
+      background: #e2e8f0;
+      color: var(--text-main);
+    }
+
     /* 3D VIEWPORT */
     .viewport-wrap {
       position: relative;
       flex: 1;
       width: 100%;
       overflow: hidden;
-      background: #f0f4f8;
+      background: #f1f5f9;
     }
 
     #canvas-container {
@@ -181,6 +189,14 @@
       flex-direction: column;
       z-index: 30;
       box-shadow: 0 -1px 3px rgba(0, 0, 0, 0.03);
+      transition: height 0.25s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    }
+
+    .telemetry-drawer.collapsed {
+      height: 0px;
+      opacity: 0;
+      overflow: hidden;
+      border-top: none;
     }
 
     .drawer-bar {
@@ -228,11 +244,10 @@
   <header class="command-bar">
     <div class="brand-cluster">
       <div class="brand-title">
-        <span class="led-dot"></span>
+        <span class="badge-status">Online</span>
         <span>Keos Room — <span class="highlight">Studio 3D</span></span>
       </div>
       <div class="status-pills">
-        <span class="pill emerald">Live Studio</span>
         <span class="pill blue">10 Crew Members</span>
         <span id="fps-meter" class="pill">60 FPS</span>
         <span id="ws-indicator" class="pill">Connecting Stream</span>
@@ -240,6 +255,7 @@
     </div>
 
     <div class="header-actions">
+      <button id="btn-toggle-dialogue" class="btn-action">Hide Dialogue</button>
       <button id="btn-reset-cam" class="btn-action">Reset Camera</button>
       <button id="btn-audio" class="btn-action">Sound On</button>
     </div>
@@ -249,10 +265,13 @@
     <div id="canvas-container"></div>
   </main>
 
-  <footer class="telemetry-drawer">
+  <footer id="telemetry-drawer" class="telemetry-drawer">
     <div class="drawer-bar">
       <span>Live Team Dialogue & System Telemetry</span>
-      <span>Three.js 3D Engine · Drag to Orbit · Scroll to Zoom</span>
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <span>Three.js 3D Engine · Drag to Orbit · Scroll to Zoom</span>
+        <button id="btn-drawer-collapse" class="btn-subtle">Hide</button>
+      </div>
     </div>
     <div id="log-stream" class="log-stream">
       <div class="log-entry">
