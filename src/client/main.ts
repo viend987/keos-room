@@ -1,10 +1,10 @@
-import { HolographicStudioEngine } from './engine/HolographicStudioEngine';
+import { Office3DEngine } from './engine/Office3DEngine';
 
-const canvas = document.getElementById('office-canvas') as HTMLCanvasElement;
+const container = document.getElementById('canvas-container') as HTMLElement;
 const logStream = document.getElementById('log-stream') as HTMLElement;
 const fpsMeter = document.getElementById('fps-meter') as HTMLElement;
 
-const engine = new HolographicStudioEngine(canvas);
+const engine = new Office3DEngine(container);
 engine.start();
 
 function appendTelemetryLog(badge: string, roleName: string, message: string): void {
@@ -24,51 +24,20 @@ function appendTelemetryLog(badge: string, roleName: string, message: string): v
   }
 }
 
-// Update FPS meter regularly
+// Update FPS meter
 setInterval(() => {
   if (fpsMeter) {
     fpsMeter.textContent = `${engine.fps} FPS`;
   }
 }, 500);
 
-// Drama & Simulation Control Triggers
-document.getElementById('btn-trigger-debate')?.addEventListener('click', () => {
-  engine.triggerDebateThread();
-  appendTelemetryLog('DEBATE', 'Studio Director', 'Triggered team debate thread (PM vs Dev vs QA).');
+// Reset Camera Button
+document.getElementById('btn-reset-cam')?.addEventListener('click', () => {
+  engine.resetCamera();
   engine.soundEffects.playButtonClick();
 });
 
-document.getElementById('btn-trigger-sprint')?.addEventListener('click', () => {
-  appendTelemetryLog('SPRINT', 'Blaze (PM)', 'Sprint rush started! All divisions coding in flow state.');
-  engine.characters.forEach(char => {
-    char.currentAction = 'WORKING';
-    char.isRaging = false;
-  });
-  engine.soundEffects.playHologramSweep();
-});
-
-document.getElementById('btn-trigger-coffee')?.addEventListener('click', () => {
-  appendTelemetryLog('BREAK', 'Synthesizer Bar', 'Coffee break called. Crew heading to cafe lounge.');
-  const coffeeGoers = ['zero', 'kael', 'rex', 'aura', 'echo'];
-  coffeeGoers.forEach((id, i) => {
-    setTimeout(() => {
-      const char = engine.characters.get(id);
-      if (char) {
-        char.targetX = engine.width - 150 + (Math.random() * 40 - 20);
-        char.targetY = engine.height - 80 + (Math.random() * 25 - 12);
-        char.currentAction = 'CHILLING';
-        engine.soundEffects.playCoffeeSip();
-      }
-    }, i * 350);
-  });
-});
-
-document.getElementById('btn-trigger-alert')?.addEventListener('click', () => {
-  appendTelemetryLog('ALERT', 'Blaze (PM)', 'Build failure detected! Critical error in staging pipeline!');
-  engine.handleTelemetryEvent('test_failure', 'staging-pipeline.ts', true);
-});
-
-// Sound Mute Toggle
+// Sound Toggle
 let audioMuted = false;
 const audioBtn = document.getElementById('btn-audio');
 audioBtn?.addEventListener('click', () => {
@@ -89,7 +58,7 @@ function connectTelemetryBridge(): void {
 
     ws.onopen = () => {
       if (wsIndicator) wsIndicator.textContent = 'Telemetry Connected';
-      appendTelemetryLog('SYSTEM', 'Studio Kernel', 'Cyber Studio connected to live telemetry stream.');
+      appendTelemetryLog('SYSTEM', 'Studio Kernel', '3D Collaborative Office connected to live telemetry stream.');
     };
 
     ws.onmessage = (event) => {
